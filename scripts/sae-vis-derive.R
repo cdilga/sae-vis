@@ -18,6 +18,17 @@ datavis <- dataset[c("RMS1_D2_Motor_Speed",
                      "Potentiometer_2",
                      "Brake_1" )]
 
+derive.same.length <- function(data) {
+  # Loop through everything except for the first and last
+  # This will cut off the first
+  retn <- c(data[1])
+  for (i in c(2:length(datavis$Motor1_Velocity-1))) {
+    retn[i] <- (datavis$Motor1_Velocity[i+1] - datavis$Motor1_Velocity[i-1])/2
+  }
+  append(retn,data[length(data)])
+  return(retn)
+}
+
 derive <- function(data) {
   # Loop through everything except for the first and last
   # This will cut off the first
@@ -42,25 +53,39 @@ ratio <- 2.33
 mass <- 86+156
 
 datavis$ID <- 1:nrow(datavis)
+
 datavis$Motor1_Velocity <- (dataset$RMS1_D2_Motor_Speed*2*pi*r)/(ratio*60)
 datavis$Motor2_Velocity <- (dataset$RMS2_D2_Motor_Speed*2*pi*r)/(ratio*60)
 
 smoothVec <- function(vec, index) {
   return(
-    predict(loess(vec ~ index, span=0.2))
+    predict(loess(vec ~ index, span=0.1))
   )
 }
 
-?predict
-?loess.smooth()
-?loess
 # datavis$Motor1_Velocity_Smooth <- predict(smooth.spline(datavis$Motor1_Velocity))$y
 datavis$Motor1_Velocity_Smooth <- smoothVec(datavis$Motor1_Velocity, datavis$ID)
 datavis$Motor2_Velocity_Smooth <- smoothVec(datavis$Motor2_Velocity, datavis$ID)
 
+# There are numbers here
+datavis$Motor1_Velocity - datavis$Motor1_Velocity_Smooth
+
+# Why?
+derive(datavis$Motor1_Velocity) - derive(datavis$Motor1_Velocity_Smooth)
+
+# However
+head(derive(datavis$Motor1_Velocity))
+head(derive(datavis$Motor1_Velocity_Smooth))
+
+# This is absurd because
+head(datavis$Motor1_Velocity)
+head(datavis$Motor1_Velocity_Smooth)
+
+
 datavis$Motor1_Acceleration <- derive(datavis$Motor1_Velocity_Smooth)
 datavis$Motor2_Acceleration <- derive(datavis$Motor2_Velocity_Smooth)
 
+# Here is a graph of the noise being removed
 debug.vis(datavis$Motor1_Velocity - datavis$Motor1_Velocity_Smooth)
 
 #This shouldn't be a flat line.
@@ -69,35 +94,4 @@ debug.vis(datavis$Motor1_Acceleration - derive(datavis$Motor1_Velocity))
 datavis$Motor1_Acceleration_Smooth <- smoothVec(datavis$Motor1_Acceleration, datavis$ID)
 datavis$Motor2_Acceleration_Smooth <- smoothVec(datavis$Motor2_Acceleration, datavis$ID)
 
-debug.vis(datavis$Motor1_Acceleration)
-#acceleration1.loess <- loess.smooth(
-#  c(1:length(derive(velocity.loess))),
-#  derive(velocity.loess), evaluate=length(derive(velocity.loess)))$y
-
-head(velocity.loess$y)
-
-debug.vis(velocity.loess)
-?predict
-
-debug.vis(velocity)
-derived <- derive(velocity)
-head(velocity)
-head(derived)
-somevar <- predict.loess()
-debug.vis(derive(velocity))
-accel <- derive(velocity)
-acceleration1 <- derive(velocityvec1)
-
-?smooth.spline
-
-head(acceleration1)
-
-debug.vis(velocityvec1)
-debug.vis(velocityvec2)
-debug.vis(rpmvec1)
-debug.vis(rpmvec2)
-debug.vis(acceleration1)
-debug.vis(acceleration2)
-
-debug.vis(velocity.loess)
-debug.vis(acceleration1.loess, c(1, 500))
+debug.vis(datavis$Motor1_Velocity_Smooth)
