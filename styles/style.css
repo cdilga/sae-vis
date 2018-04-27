@@ -4,12 +4,12 @@ svg > rect {
 
 .line {
   fill: none;
-  stroke: slategrey;
+  stroke: #2e1713;
   stroke-width: 0.5;
 }
 
 .area {
-  fill: slategrey;
+  fill: rgb(120, 156, 192);
   stroke: none;
   stroke-width: 0.5;
 }
@@ -20,7 +20,23 @@ svg > rect {
   stroke-width: 0.5;
 }
 
-.halfMillionLabel {
-  fill: red;
-  stroke-width: 0.5;
+html, body{
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
+
+#controls {
+  float:right;
+  min-height:100%;
+  background-color: rgb(214, 149, 106);
+  width:33.33%;
+}
+#vis-container {
+  float:left;
+  min-height:100%;
+  width:auto;
+}
+#car, object.car {
+  height:500px;
 }
