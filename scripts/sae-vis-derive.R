@@ -98,7 +98,8 @@ debug.vis(datavis$Motor1_Acceleration)
 
 datavis$Motor_Velocity_Difference <- datavis$Motor1_Velocity_Smooth+datavis$Motor2_Velocity_Smooth
 
-difference <- ggplot(data=datavis, aes(x=ID, y=Motor_Velocity_Difference, abs(Acceleration)))
+
+difference <- ggplot(data=datavis[c(1:(nrow(datavis)-50)),], aes(x=ID, y=Motor_Velocity_Difference, abs(Acceleration)))
 difference + geom_line(aes(color=abs(Acceleration))) +
   scale_color_gradient(low="green", high="red") +
   xlab("Time (s)") +
@@ -110,40 +111,8 @@ difference + geom_line(aes(color=abs(Acceleration))) +
 ?ggplot
 
 # Look at the outliers for acceleration (which we see at the end of the data)
-outlier.acceleration <- ggplot(data=datavis, aes(x=ID, y=Acceleration))
-
-
-debug.vis(datavis$Motor1_Velocity_Smooth)
-# There are numbers here
-datavis$Motor1_Velocity - datavis$Motor1_Velocity_Smooth
-
-# Why?
-derive(datavis$Motor1_Velocity) - derive(datavis$Motor1_Velocity_Smooth)
-
-# However
-head(derive(datavis$Motor1_Velocity))
-head(derive(datavis$Motor1_Velocity_Smooth))
-
-# This is absurd because
-head(datavis$Motor1_Velocity)
-head(datavis$Motor1_Velocity_Smooth)
-
-
-datavis$Motor1_Acceleration <- derive(datavis$Motor1_Velocity_Smooth)
-datavis$Motor2_Acceleration <- derive(datavis$Motor2_Velocity_Smooth)
-
-
-# Here is a graph of the noise being removed
-debug.vis(datavis$Motor1_Velocity - datavis$Motor1_Velocity_Smooth)
-
-#This shouldn't be a flat line.
-debug.vis(datavis$Motor1_Acceleration - derive(datavis$Motor1_Velocity))
-
-datavis$Motor1_Acceleration_Smooth <- smooth.loess(datavis$Motor1_Acceleration, datavis$ID)
-datavis$Motor2_Acceleration_Smooth <- smooth.loess(datavis$Motor2_Acceleration, datavis$ID)
-
-debug.vis(datavis$Motor1_Velocity)
-
+outlier.acceleration <- ggplot(data=datavis, aes(x=ID, y=Acceleration)) 
+outlier.acceleration + geom_line()
 
 # Instead Try a Savitzky-Golay fit
 ?sgolayfilt()
