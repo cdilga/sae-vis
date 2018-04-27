@@ -14,10 +14,10 @@ svg > rect {
   stroke-width: 0.5;
 }
 
-.halfMillion {
+.box {
   fill: none;
-  stroke: red;
-  stroke-width: 0.5;
+  stroke: #2e1713;
+  stroke-width: 1;
 }
 
 html, body{
@@ -26,11 +26,16 @@ html, body{
   padding: 0;
 }
 
+#chart {
+  background-color: aliceblue;
+  padding: 40px;
+}
+
 #controls {
   float:right;
   min-height:100%;
   background-color: rgb(214, 149, 106);
-  width:33.33%;
+  width:50%;
 }
 #vis-container {
   float:left;
