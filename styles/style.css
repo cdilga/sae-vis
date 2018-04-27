@@ -4,7 +4,7 @@ svg > rect {
 
 .line {
   fill: none;
-  stroke: rgb(123, 175, 228);
+  stroke: #2e1713;
   stroke-width: 0.5;
 }
 
