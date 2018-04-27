@@ -26,7 +26,7 @@ function init() {
   });
 
   function lineChart(d) {
-    var xScale = d3.scaleTime()
+    var xScale = d3.scaleLinear()
       .domain([
         d3.min(dataset, function(d) {return d.time}),
         d3.max(dataset, function(d) {return d.time})
@@ -66,13 +66,26 @@ function init() {
       .attr("class", "axis")
       .call(yAxis);
 
-    // svg.append("line")
-    //   .attr("class", "halfMillion")
-    //   .attr("x1", xpadding)
-    //   .attr("y1", yScale(500000))
-    //   .attr("x2", w)
-    //   .attr("y2", yScale(500000))
-    //   .attr("stroke-dasharray", "5, 5")
+    svg.append("line")
+      .attr("class", "box")
+      .attr("x1", xpadding)
+      .attr("y1", h - ypadding)
+      .attr("x2", w)
+      .attr("y2", h - ypadding);
+
+    svg.append("line")
+      .attr("class", "box")
+      .attr("x1", xpadding)
+      .attr("y1", 0)
+      .attr("x2", w)
+      .attr("y2", 0);
+
+    svg.append("line")
+      .attr("class", "box")
+      .attr("x1", w)
+      .attr("y1", 0)
+      .attr("x2", w)
+      .attr("y2", h - ypadding);
 
     // svg.append("text")
     //   .attr("class", "halfMillionLabel")
