@@ -10,17 +10,22 @@
   <title>SAE Data Visualisation</title>
 
   <script type="text/javascript" src="scripts/d3.min.js"></script>
-  <script type="text/javascript" src="scripts/visualisation.js"></script>
+  <script type="text/javascript" src="scripts/sae-vis.js"></script>
 
   <link rel="stylesheet" href="styles/style.css">
 
 </head>
 
 <body>
-  <h1>SAE Data Visualisation</h1>
-  <p id="chart"></p>
-  <img src="img/TopViewCar.svg" />
+  <div id="vis-container"><h1>SAE Data Visualisation</h1>
+  
+  <object type="img/svg" data="img/TopViewCar.svg" class="car">
+  </object>
   <footer>COS30045 Data Visualisation <br />
     Chris Dilger 101133703</footer>
+  </div>
+  <div id="controls">
+    <p id="chart"></p>
+  </div>
 </body>
 </html>
