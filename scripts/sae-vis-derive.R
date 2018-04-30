@@ -99,6 +99,7 @@ debug.vis(datavis$Motor1_Acceleration)
 datavis$Motor_Velocity_Difference <- datavis$Motor1_Velocity_Smooth+datavis$Motor2_Velocity_Smooth
 
 
+
 difference <- ggplot(data=datavis[c(1:(nrow(datavis)-50)),], aes(x=ID, y=Motor_Velocity_Difference, abs(Acceleration)))
 difference + geom_line(aes(color=abs(Acceleration))) +
   scale_color_gradient(low="green", high="red") +
@@ -128,4 +129,5 @@ acceleration <- derive(smooth.velocity)
 debug.vis(acceleration)
 
 
-
+racing.dataset <- datavis[c(1:(nrow(datavis)-50)),]
+write.csv(racing.dataset, "C:/Users/cdilg/Documents/src/sae-vis/data/1s_sample_clean.csv")
