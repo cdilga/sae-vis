@@ -4,20 +4,24 @@ svg > rect {
 
 .line {
   fill: none;
-  stroke: #2e1713;
-  stroke-width: 0.5;
+  stroke: #605f5e;
+  stroke-width:2;
+}
+
+svg, .axis {
+  font-family: 'Open Sans', sans-serif;
+  stroke: #605f5e;
 }
 
 .area {
   fill: rgb(120, 156, 192);
   stroke: none;
-  stroke-width: 0.5;
+
 }
 
 .box {
   fill: none;
-  stroke: #2e1713;
-  stroke-width: 1;
+  stroke: #605f5e;
 }
 
 html, body{
@@ -27,14 +31,15 @@ html, body{
 }
 
 #chart {
-  background-color: aliceblue;
+  background-color: #ede0cb;
   padding: 40px;
+  text-align: center;
 }
 
 #controls {
   float:right;
   min-height:100%;
-  background-color: rgb(214, 149, 106);
+  background-color: #605f5e;
   width:50%;
 }
 #vis-container {

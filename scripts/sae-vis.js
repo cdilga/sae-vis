@@ -6,6 +6,8 @@ function init() {
   var xpadding = 60;
   var ypadding = 20;
 
+  var lineWidth = 1;
+
   var yGraphPadding = 20;
 
   var rowConverter = function(d) {
@@ -26,6 +28,9 @@ function init() {
 
     lineChart(data);
   });
+
+  //Create a function which perhaps takes an object and visualise it. It should transition between the previous and this set
+  //Perhaps include some method of selecting a subset of the data
 
   function lineChart(data) {
     var xScale = d3.scaleLinear()
@@ -80,15 +85,15 @@ function init() {
     svg.append("line")
       .attr("class", "box")
       .attr("x1", xpadding)
-      .attr("y1", 0)
+      .attr("y1", lineWidth)
       .attr("x2", w)
-      .attr("y2", 0);
+      .attr("y2", lineWidth);
 
     svg.append("line")
       .attr("class", "box")
-      .attr("x1", w-1)
+      .attr("x1", w - lineWidth)
       .attr("y1", 0)
-      .attr("x2", w-1)
+      .attr("x2", w - lineWidth)
       .attr("y2", h - ypadding);
 
     // svg.append("text")
