@@ -10,6 +10,16 @@ function init() {
 
   var yGraphPadding = 20;
 
+  var svg = d3.select("#chart")
+    .append("svg")
+    .attr("width", w)
+    .attr("height", h);
+
+  var selectAccel = function(d) { return d.accelerationDifference; };
+
+  d3.select("#acceleration").on("click", function(d) {
+    lineChart(dataset, function(d) {return d.acceleration;});
+  });
   var rowConverter = function(d) {
     return {
       acceleration: parseFloat(d["Acceleration"]),
@@ -26,13 +36,13 @@ function init() {
     dataset = data;
     //console.table(dataset);
 
-    lineChart(data);
+    lineChart(data, selectAccel);
   });
 
   //Create a function which perhaps takes an object and visualise it. It should transition between the previous and this set
   //Perhaps include some method of selecting a subset of the data
 
-  function lineChart(data) {
+  function lineChart(data, dataSelector) {
     var xScale = d3.scaleLinear()
       .domain([
         d3.min(data, function(d) {return d.time}),
@@ -41,20 +51,15 @@ function init() {
       .range([xpadding, w]);
 
     var yScale = d3.scaleLinear()
-      .domain([d3.min(data, function(d) { return d.accelerationDifference * 1.15}), d3.max(data, function(d) {return d.accelerationDifference * 1.15})])
+      .domain([d3.min(data, function(d) { return dataSelector(d) * 1.15}), d3.max(data, function(d) {return dataSelector(d) * 1.15})])
       .range([h - ypadding, 0]);
 
     var line = d3.line()
       .x(function (d) { return xScale(d.time); })
-      .y(function (d) { return yScale(d.accelerationDifference); });
-
-    var svg = d3.select("#chart")
-      .append("svg")
-      .attr("width", w)
-      .attr("height", h);
+      .y(function (d) { return yScale(dataSelector(d)); });
 
     svg.append("path")
-      .datum(data)
+      .data([data])
       .attr("class", "line")
       .attr("d", line);
 
@@ -70,6 +75,7 @@ function init() {
       .attr("transform", "translate (0, " + (h - ypadding - yScale(0)) + ")")
       .attr("class", "axis")
       .call(xAxis);
+
     svg.append("g")
       .attr("transform", "translate (" + xpadding + ", 0)")
       .attr("class", "axis")
