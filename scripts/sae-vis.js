@@ -1,9 +1,22 @@
 var dataset;
+
+//It would be convenient to make a chart object, which has an svg,
+// axes exposed
+// something to update lines?
+// Perhaps something to help with choosing data
+function Chart(x, y, width, height) {
+  return {
+    width: width,
+    height: height,
+    axis: {x: xAxis, y: yAxis}
+  }
+}
+
 function init() {
   var w = 600;
   var h = 300;
   //var dataset;
-
+  var chart;
   var xpadding = 60;
   var ypadding = 20;
 
@@ -17,43 +30,46 @@ function init() {
     .attr("height", h);
 
   var selectAccel = function(d) { return d.accelerationDifference; };
-  var xScale, yScale;
-  var update = function(data, dataSelector) {
-    xScale = d3.scaleLinear()
-      .domain([
-        d3.min(data, function (d) { return d.time }),
-        d3.max(data, function (d) { return d.time })
-      ])
-      .range([xpadding, w]);
-
-    yScale = d3.scaleLinear()
-      .domain([d3.min(data, function (d) { return dataSelector(d) * 1.15 }), d3.max(data, function (d) { return dataSelector(d) * 1.15 })])
-      .range([h - ypadding, 0]);
-
-    var line = d3.line()
-      .x(function (d) { return xScale(d.time); })
-      .y(function (d) { return yScale(dataSelector(d)); });
-
-    var paths = svg.selectAll("path")
-      .data([data])
-    paths.transition()
-      .attr("d", line);
-  }
-  d3.select("#acceleration").on("click", function(d) {
-    update(dataset, function (d) { return d.acceleration });
-    console.log("update");
-    //lineChart(dataset, function(d) {return d.acceleration;});
-  });
-
-  d3.select("#diff").on("click", function(d) {
-    update(dataset, function(d) {return d.accelerationDifference; });
-  });
 
   var rowConverter = function(d) {
+    /*
+    ===============================
+    CSV Header, for quick reference
+    ===============================
+
+    "", 
+    "RMS1_D2_Motor_Speed", 
+    "RMS2_D2_Motor_Speed", 
+    "RMS1_D3_Motor_Temperature", 
+    "RMS2_D3_Motor_Temperature", 
+    "RMS1_D2_Torque_Feedback", 
+    "RMS2_D2_Torque_Feedback", 
+    "Potentiometer_1", 
+    "Potentiometer_2", 
+    "Brake_1", 
+    "RMS1_D3_Motor_Temperature.1", 
+    "RMS2_D3_Motor_Temperature.1", 
+    "RMS1_D1_Control_Board_Temperature", 
+    "RMS2_D1_Control_Board_Temperature", 
+    "ID", 
+    "Motor1_Velocity", 
+    "Motor2_Velocity", 
+    "Motor1_Velocity_Smooth", 
+    "Motor2_Velocity_Smooth", 
+    "Motor1_Acceleration", 
+    "Motor2_Acceleration", 
+    "Velocity", 
+    "Acceleration", 
+    "Motor_Velocity_Difference"
+    */
+
+    //Please fix efficency
     return {
       acceleration: parseFloat(d["Acceleration"]),
       accelerationDifference: parseFloat(d["Motor_Velocity_Difference"]),
       velocity: parseFloat(d["Velocity"]),
+      motorTemperature: (parseFloat(d["RMS1_D3_Motor_Temperature"]) + parseFloat(d["RMS2_D3_Motor_Temperature"]))/2,
+      efficency: Math.random() * 10,
       time: parseInt(d["ID"])/60
     };
   }
@@ -66,14 +82,38 @@ function init() {
     dataset = data;
     //console.table(dataset);
 
-    lineChart(data, selectAccel);
+    chart = LineChart(data, selectAccel);
+    registerAllButtons();
     next();
   });
+
+  var registerAllButtons = function() {
+    //Defines how our charts will be setup
+    d3.select("#acceleration").on("click", function (d) {
+      chart.update(dataset, function (d) { return d.acceleration }, "Acceleration", "Time");     
+    });
+
+    d3.select("#diff").on("click", function (d) {
+      chart.update(dataset, function (d) { return d.accelerationDifference; }, "Differential", "Time");
+    });
+
+    d3.select("#velocity").on("click", function (d) {
+      chart.update(dataset, function (d) { return d.velocity; }, "Velocity", "Time");
+    });
+
+    d3.select("#temperature").on("click", function (d) {
+      chart.update(dataset, function (d) { return d.motorTemperature; }, "Temperature *C", "Time");
+    });
+
+    d3.select("#efficency").on("click", function (d) {
+      chart.update(dataset, function (d) { return d.efficency; }, "Efficency", "Time");
+    });
+  }
 
   //Create a function which perhaps takes an object and visualise it. It should transition between the previous and this set
   //Perhaps include some method of selecting a subset of the data
 
-  function lineChart(data, dataSelector) {
+  function LineChart(data, dataSelector) {
     xScale = d3.scaleLinear()
       .domain([
         d3.min(data, function(d) {return d.time}),
@@ -106,52 +146,109 @@ function init() {
 
     svg.append("g")
       .attr("transform", "translate (0, " + (h - ypadding - yScale(0)) + ")")
-      .attr("class", "axis")
+      .attr("id", "chart-x-axis")
       .call(xAxis);
 
     svg.append("g")
       .attr("transform", "translate (" + xpadding + ", 0)")
-      .attr("class", "axis")
+      .attr("id", "chart-y-axis")
       .call(yAxis);
 
-    svg.append("line")
+    svg.append("rect")
       .attr("class", "box")
-      .attr("x1", xpadding)
-      .attr("y1", h - ypadding)
-      .attr("x2", w)
-      .attr("y2", h - ypadding);
+      .attr("x", xpadding)
+      .attr("y", lineWidth)
+      .attr("width", w-xpadding)
+      .attr("height", h-ypadding);
 
-    svg.append("line")
-      .attr("class", "box")
-      .attr("x1", xpadding)
-      .attr("y1", lineWidth)
-      .attr("x2", w)
-      .attr("y2", lineWidth);
-
-    svg.append("line")
-      .attr("class", "box")
-      .attr("x1", w - lineWidth)
-      .attr("y1", 0)
-      .attr("x2", w - lineWidth)
-      .attr("y2", h - ypadding);
-
-    svg.append("text")
+    var xLabel = svg.append("text")
       .attr("transform", "rotate(-90, "+ xpadding/2 + ", " + (h - ypadding) + ")")
       .attr("x", xpadding/2)
       .attr("y", h - ypadding)
       .attr("class", "axis-label y-axis")
       .text("Motor 1 - Motor 2 Velocity (ms^-2)");
 
-    svg.append("text")
+    var yLabel = svg.append("text")
       .attr("transform",
         "translate(" + (w / 2) + " ," +
         (h - 4) + ")")
-      .attr("class", "axis-label x-axis")
+      .attr("class", "axis-label")
       .text("Time (minutes)");
-  }
-  
-}
+    var setXLabel = function(text) {
+      xLabel.transition()
+        .text(text);
+    }
 
+    var setYLabel = function(text) {
+      xLabel.transition()
+        .text(text);
+    }
+
+    var update = function (data, dataSelector, xAxisText, yAxisText) {
+      var delay = 250;
+      xScale = d3.scaleLinear()
+        .domain([
+          d3.min(data, function (d) { return d.time }),
+          d3.max(data, function (d) { return d.time })
+        ])
+        .range([xpadding, w]);
+      
+      yScale = d3.scaleLinear()
+        .domain([d3.min(data, function (d) { return dataSelector(d) * 1.15 }), d3.max(data, function (d) { return dataSelector(d) * 1.15 })])
+        .range([h - ypadding, 0]);
+
+      var line = d3.line()
+        .x(function (d) { return xScale(d.time); })
+        .y(function (d) { return yScale(dataSelector(d)); });
+
+      
+      var paths = svg.selectAll("path")
+        .data([data])
+        .transition()
+        .delay(250)
+        .attr("d", line);
+      
+      //Update the axes by creating new functions, and then transititioning to a new type of axis
+      var xAxis = d3.axisBottom()
+        .ticks()
+        .scale(xScale);
+
+      var yAxis = d3.axisLeft()
+        .scale(yScale);
+
+      svg.select("#chart-x-axis")
+        .transition()
+        .delay(delay)
+        .call(xAxis);
+      
+      svg.select("#chart-y-axis")
+        .transition()
+        .delay(delay)
+        .call(yAxis);
+
+      //Update the labels too
+      xLabel.transition()
+        .delay(delay)
+        .text(xAxisText)
+      yLabel.transition()
+        .delay(delay)
+        .text(yAxisText)
+    }
+    return {
+      width: w,
+      height: h,
+      axis: { x: xAxis, y: yAxis },
+      svg: svg,
+      scale: {x: xScale, y: yScale},
+      line: line,
+      update: update,
+      label: {x: xLabel, y: yLabel}
+    }
+  }
+}
+//lets have an object which basically has all the text correct for making a chart out of some charts.
+
+/*
 function next() {
   var w=600,
       h=100,
@@ -249,5 +346,5 @@ function next() {
     });
 
 }
-
+*/
 window.onload = init;
