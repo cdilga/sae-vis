@@ -4,13 +4,6 @@ var dataset;
 // axes exposed
 // something to update lines?
 // Perhaps something to help with choosing data
-function Chart(x, y, width, height) {
-  return {
-    width: width,
-    height: height,
-    axis: {x: xAxis, y: yAxis}
-  }
-}
 
 function init() {
   var w = 600;

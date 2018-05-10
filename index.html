@@ -11,30 +11,43 @@
   
   <script type="text/javascript" src="scripts/d3.min.js"></script>
   <script type="text/javascript" src="scripts/sae-vis.js"></script>
+  <script type="text/javascript" src="scripts/bootstrap.js"></script>
 
-  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" / >
-  <link rel="stylesheet" href="styles/style.css">
+  <link href="https://fonts.googleapis.com/css?family=Open+Sans" rel="stylesheet" />
+  <link rel="stylesheet" href="styles/style.css" />
+  <link rel="stylesheet" href="styles/bootstrap.css" />
 
 </head>
 
 <body>
-  <div id="vis-container"><h1>SAE Data Visualisation</h1>
+<div class="container-fluid">
+  <div class="row">
+    <div id="vis-container" class="col-12 col-md-4">
+      <h1>SAE Data Visualisation</h1>
+    
+    <object type="image/svg+xml" data="img/TopViewCar.svg" class="car">Your browser does not support SVG
+    </object>
   
-  <object type="img/svg" data="img/TopViewCar.svg" class="car">
-  </object>
- 
-  </div>
-  <div id="controls">
-    <p id="chart"></p>
-    <button id="diff" class="btn-lge">Differential</button>
-    <button id="acceleration" class="btn-lge">Acceleration</button>
-    <button id="velocity" class="btn-lge">Speed</button>
-    <button id="temperature" class="btn-lge">Temperature</button>
-    <button id="efficency" class="btn-lge">Efficency</button>
-    <p id="overview"></p>
-  </div>
-  <footer>COS30045 Data Visualisation
-    <br /> Chris Dilger 101133703</footer>
-
+    </div>
+    <div id="controls" class="col-12 col-md-8 no-gutters">
+      <div class="row no-gutters">
+      <div id="chart" class="col-12"></div>
+      <div id="overview" class="col-12"></div>
+      <div class="col-12 row no-gutters">
+        <button id="diff" class="btn btn-dark btn-lg col-6">Differential</button>
+        <button id="acceleration" class="btn btn-dark btn-lg col-6">Acceleration</button>
+        <button id="velocity" class="btn btn-dark btn-lg col-6">Speed</button>
+        <button id="temperature" class="btn btn-dark btn-lg col-6">Temperature</button>
+        <button id="efficency" class="btn btn-dark btn-lg col-6">Efficency</button>
+      </div>
+      </div>
+    </div>
+    </div>
+    <div class="row">
+      <footer>COS30045 Data Visualisation
+      <br /> Chris Dilger 101133703
+    </footer>
+  </div> 
+</div>
 </body>
 </html>

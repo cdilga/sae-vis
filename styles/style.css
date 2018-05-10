@@ -1,3 +1,6 @@
+button {
+  border-radius: 0 !important;
+}
 svg > rect {
   fill: rgb(8, 151, 166);
 }
@@ -41,7 +44,14 @@ html, body{
   min-height:100%;
   background-color: #605f5e;
   width:50%;
+  padding:0;
 }
+
+#controls button {
+  border: 1px solid #252627;
+  height: 3em;
+}
+
 #vis-container {
   float:left;
   min-height:100%;
