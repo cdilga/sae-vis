@@ -183,7 +183,7 @@ function init() {
         svg.select(".chart-x-axis")
           .call(xAxis);
         svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
-          .scale(width / (s[1] - s[0]))
+          .scale(w / (s[1] - s[0]))
           .translate(-s[0], 0));
 
       });
