@@ -169,6 +169,38 @@ function init() {
     var yAxis = d3.axisLeft()
       .scale(yScale);
 
+    //A brush is something that can be manipulated by the mouse
+    var brush = d3.brushX()
+      .extent([[0, 0], [w, overview_h]])
+      .on("brush end", function() {
+        //scale is the selection we just made, otherwise it's the xScale overview's range
+        var s = d3.event.selection || xScaleOverview.range();
+        
+
+        xScale.domain(s.map(xScaleOverview.invert, xScaleOverview));
+        svg.select(".line")
+          .attr("d", line);
+        svg.select(".chart-x-axis")
+          .call(xAxis);
+        svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
+          .scale(width / (s[1] - s[0]))
+          .translate(-s[0], 0));
+
+      });
+
+    //A zoom helps us zoom content
+    var zoom = d3.zoom()
+      .scaleExtent([1, Infinity])
+      .translateExtent([0, 0], [w, h])
+      .extent([0, 0], [w, h])
+      .on("zoom", function() {
+        var t = d3.event.transform;
+        xScale.domain(t.rescaleX(xScaleOverview).domain());
+        svg.select(".line").attr("d", line);
+        svg.select(".chart-x-axis").call(xScaleOverview);
+        overview.select(".brush").call(brush.move, xScaleOverview.range().map(t.invertX, t));
+      });
+
     svg.append("g")
       .attr("transform", "translate (0, " + (h - ypadding - yScale(0)) + ")")
       .attr("class", "axis") 
@@ -185,7 +217,8 @@ function init() {
       .attr("x", xpadding)
       .attr("y", lineWidth)
       .attr("width", w-xpadding)
-      .attr("height", h-ypadding);
+      .attr("height", h-ypadding)
+      .call(zoom);
 
     var xLabel = svg.append("text")
       .attr("transform", "rotate(-90, "+ xpadding/2 + ", " + (h - ypadding) + ")")
@@ -200,6 +233,11 @@ function init() {
         (h - 4) + ")")
       .attr("class", "axis-label axis")
       .text("Time (minutes)");
+
+    overview.append("g")
+      .attr("class", "brush")
+      .call(brush)
+      .call(brush.move, xScale.range());
 
     var setXLabel = function(text) {
       xLabel.transition()
