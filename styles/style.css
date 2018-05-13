@@ -7,24 +7,35 @@ svg > rect {
 
 .line {
   fill: none;
-  stroke: #605f5e;
-  stroke-width:2;
+  stroke: #CEBFAB;
+  stroke-width: 2px;
 }
 
-svg, .axis {
+.axis text, text.axis {
   font-family: 'Open Sans', sans-serif;
-  stroke: #605f5e;
+  fill: #CCC;
+}
+
+text.axis {
+  fill: #D4D8CD;
+}
+
+.axis line {
+  stroke: #FFF;
+}
+
+.axis path{
+  stroke: #FFF;
 }
 
 .area {
   fill: rgb(120, 156, 192);
   stroke: none;
-
 }
 
 .box {
   fill: none;
-  stroke: #605f5e;
+  stroke: #FFFFFF;
 }
 
 html, body{
@@ -34,7 +45,13 @@ html, body{
 }
 
 #chart {
-  background-color: #ede0cb;
+  background-color: #928779;
+  padding: 40px;
+  text-align: center;
+}
+
+#overview {
+  background-color: #928779;
   padding: 40px;
   text-align: center;
 }

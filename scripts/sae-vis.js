@@ -6,24 +6,33 @@ var dataset;
 // Perhaps something to help with choosing data
 
 function init() {
+  //All inital parameters
   var w = 600;
   var h = 300;
-  //var dataset;
   var chart;
   var xpadding = 60;
   var ypadding = 20;
+
+  var overview_h = h/5;
+  var overview_w = w;
+  var overview_xpadding = xpadding;
+  var overview_ypadding = ypadding;
 
   var lineWidth = 1;
 
   var yGraphPadding = 20;
 
+  //svg holding the main visualisation
   var svg = d3.select("#chart")
     .append("svg")
     .attr("width", w)
     .attr("height", h);
+  //overview holding the brush selection
+  var overview = d3.select("#overview").append("svg")
+    .attr("width", overview_w)
+    .attr("height", overview_h);
 
-  var selectAccel = function(d) { return d.accelerationDifference; };
-
+  //Parse data from the CSV
   var rowConverter = function(d) {
     /*
     ===============================
@@ -72,13 +81,14 @@ function init() {
       d3.select("#chart").append("p")
         .text("Data failed to load");
     }
-    dataset = data;
-    //console.table(dataset);
 
-    chart = LineChart(data, selectAccel);
+    dataset = data;
+
+    chart = LineChart(data, function (d) { return d.accelerationDifference; });
     registerAllButtons();
-    next();
   });
+
+  //TODO see if there is an axis mid?
 
   var registerAllButtons = function() {
     //Defines how our charts will be setup
@@ -104,7 +114,7 @@ function init() {
   }
 
   //Create a function which perhaps takes an object and visualise it. It should transition between the previous and this set
-  //Perhaps include some method of selecting a subset of the data
+  //Perhaps include some method of selecting a subset of the dzata
 
   function LineChart(data, dataSelector) {
     xScale = d3.scaleLinear()
@@ -114,13 +124,28 @@ function init() {
       ])
       .range([xpadding, w]);
 
+    xScaleOverview = d3.scaleLinear()
+      .domain([
+        d3.min(data, function (d) { return d.time }),
+        d3.max(data, function (d) { return d.time })
+      ])
+      .range([overview_xpadding, overview_w]);
+
     yScale = d3.scaleLinear()
       .domain([d3.min(data, function(d) { return dataSelector(d) * 1.15}), d3.max(data, function(d) {return dataSelector(d) * 1.15})])
       .range([h - ypadding, 0]);
 
+    yScaleOverview = d3.scaleLinear()
+      .domain([d3.min(data, function (d) { return dataSelector(d) * 1.15 }), d3.max(data, function (d) { return dataSelector(d) * 1.15 })])
+      .range([overview_h - overview_ypadding, 0]);
+    
     var line = d3.line()
       .x(function (d) { return xScale(d.time); })
       .y(function (d) { return yScale(dataSelector(d)); });
+
+    var overviewLine = d3.line()
+      .x(function (d) { return xScaleOverview(d.time); })
+      .y(function (d) { return yScaleOverview(dataSelector(d)); });
 
     svg.selectAll("path")
       .data([data])
@@ -128,6 +153,13 @@ function init() {
       .append("path")
       .attr("class", "line")
       .attr("d", line);
+
+    overview.selectAll("path")
+      .data([data])
+      .enter()
+      .append("path")
+      .attr("class", "line")
+      .attr("d", overviewLine);
 
     //.tickValues(d3.range(d3.min(data, function(d) {return d.time}) - 1, d3.max(data, function(d) {return d.time}) -1, 60))
     var xAxis = d3.axisBottom()
@@ -139,12 +171,13 @@ function init() {
 
     svg.append("g")
       .attr("transform", "translate (0, " + (h - ypadding - yScale(0)) + ")")
-      .attr("id", "chart-x-axis")
+      .attr("class", "axis") 
       .call(xAxis);
 
     svg.append("g")
       .attr("transform", "translate (" + xpadding + ", 0)")
       .attr("id", "chart-y-axis")
+      .attr("class", "axis")
       .call(yAxis);
 
     svg.append("rect")
@@ -158,15 +191,16 @@ function init() {
       .attr("transform", "rotate(-90, "+ xpadding/2 + ", " + (h - ypadding) + ")")
       .attr("x", xpadding/2)
       .attr("y", h - ypadding)
-      .attr("class", "axis-label y-axis")
+      .attr("class", "axis-label y-axis axis")
       .text("Motor 1 - Motor 2 Velocity (ms^-2)");
 
     var yLabel = svg.append("text")
       .attr("transform",
         "translate(" + (w / 2) + " ," +
         (h - 4) + ")")
-      .attr("class", "axis-label")
+      .attr("class", "axis-label axis")
       .text("Time (minutes)");
+
     var setXLabel = function(text) {
       xLabel.transition()
         .text(text);
@@ -227,6 +261,8 @@ function init() {
         .delay(delay)
         .text(yAxisText)
     }
+
+    //For future use, a chart object which has some helpful items exposed
     return {
       width: w,
       height: h,
@@ -239,7 +275,6 @@ function init() {
     }
   }
 }
-//lets have an object which basically has all the text correct for making a chart out of some charts.
 
 /*
 function next() {
