@@ -81,9 +81,15 @@ html, body{
 
 @media (max-width: 700px) {
   #chart svg, #overview svg {
-    width: 80%;
+    width: 90%;
   }
   #chart, #overview {
     padding: 0;
+  }
+}
+
+@media (max-width: 768px) {
+  #vis-container {
+    text-align: center;
   }
 }
