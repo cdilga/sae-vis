@@ -25,10 +25,13 @@ function init() {
   //svg holding the main visualisation
   var svg = d3.select("#chart")
     .append("svg")
+    .attr("viewBox", "0 0 " + w + " " + h)
     .attr("width", w)
     .attr("height", h);
   //overview holding the brush selection
-  var overview = d3.select("#overview").append("svg")
+  var overview = d3.select("#overview")
+    .append("svg")
+    .attr("viewBox", "0 0 " + overview_w + " " + overview_h)
     .attr("width", overview_w)
     .attr("height", overview_h);
 

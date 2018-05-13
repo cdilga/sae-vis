@@ -74,6 +74,16 @@ html, body{
   min-height:100%;
   width:auto;
 }
+
 #car, object.car {
   height:500px;
+}
+
+@media (max-width: 700px) {
+  #chart svg, #overview svg {
+    width: 80%;
+  }
+  #chart, #overview {
+    padding: 0;
+  }
 }
