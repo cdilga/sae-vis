@@ -9,6 +9,7 @@ svg > rect {
   fill: none;
   stroke: #CEBFAB;
   stroke-width: 2px;
+  clip-path: url(#clip);
 }
 
 .axis text, text.axis {

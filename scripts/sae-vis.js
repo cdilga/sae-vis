@@ -215,6 +215,14 @@ function init() {
       .attr("class", "axis")
       .call(yAxis);
 
+    svg.append("defs").append("clipPath")
+      .attr("id", "clip")
+      .append("rect")
+      .attr("x", xpadding)
+      .attr("y", lineWidth)
+      .attr("width", w - xpadding)
+      .attr("height", h - ypadding)
+      
     svg.append("rect")
       .attr("class", "box")
       .attr("x", xpadding)
