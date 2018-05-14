@@ -172,6 +172,13 @@ function init() {
     var yAxis = d3.axisLeft()
       .scale(yScale);
 
+    var xAxisOverview = d3.axisBottom()
+      .ticks()
+      .scale(xScaleOverview);
+
+    var yAxisOverview = d3.axisBottom()
+      .scale(yScaleOverview);
+
     //A brush is something that can be manipulated by the mouse
     var brush = d3.brushX()
       .extent([[0, 0], [w, overview_h]])
@@ -179,7 +186,6 @@ function init() {
         //scale is the selection we just made, otherwise it's the xScale overview's range
         var s = d3.event.selection || xScaleOverview.range();
         
-
         xScale.domain(s.map(xScaleOverview.invert, xScaleOverview));
         svg.select(".line")
           .attr("d", line);
@@ -188,7 +194,6 @@ function init() {
         svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
           .scale(w / (s[1] - s[0]))
           .translate(-s[0], 0));
-
       });
 
     //A zoom helps us zoom content
@@ -203,11 +208,15 @@ function init() {
         svg.select(".chart-x-axis").call(xScaleOverview);
         overview.select(".brush").call(brush.move, xScaleOverview.range().map(t.invertX, t));
       });
-
     svg.append("g")
       .attr("transform", "translate (0, " + (h - ypadding - yScale(0)) + ")")
       .attr("class", "axis") 
       .call(xAxis);
+
+    overview.append("g")
+      .attr("transform", "translate (0, " + (overview_h - ypadding) + ")")
+      .attr("class", "axis")
+      .call(xAxisOverview);
 
     svg.append("g")
       .attr("transform", "translate (" + xpadding + ", 0)")
@@ -273,16 +282,36 @@ function init() {
         .domain([d3.min(data, function (d) { return dataSelector(d) * 1.15 }), d3.max(data, function (d) { return dataSelector(d) * 1.15 })])
         .range([h - ypadding, 0]);
 
+      xScaleOverview = d3.scaleLinear()
+        .domain([
+          d3.min(data, function (d) { return d.time }),
+          d3.max(data, function (d) { return d.time })
+        ])
+        .range([overview_xpadding, overview_w]);
+
+      yScaleOverview = d3.scaleLinear()
+        .domain([d3.min(data, function (d) { return dataSelector(d) * 1.15 }), d3.max(data, function (d) { return dataSelector(d) * 1.15 })])
+        .range([overview_h - overview_ypadding, 0]);
+
       var line = d3.line()
         .x(function (d) { return xScale(d.time); })
         .y(function (d) { return yScale(dataSelector(d)); });
 
-      
+      var overviewLine = d3.line()
+        .x(function (d) { return xScaleOverview(d.time); })
+        .y(function (d) { return yScaleOverview(dataSelector(d)); });
+
       var paths = svg.selectAll("path")
         .data([data])
         .transition()
         .delay(250)
         .attr("d", line);
+
+      var overviewPaths = overview.selectAll("path")
+        .data([data])
+        .transition()
+        .delay(250)
+        .attr("d", overviewLine);
       
       //Update the axes by creating new functions, and then transititioning to a new type of axis
       var xAxis = d3.axisBottom()
@@ -291,6 +320,10 @@ function init() {
 
       var yAxis = d3.axisLeft()
         .scale(yScale);
+
+      var xAxisOverview = d3.axisBottom()
+        .ticks()
+        .scale(xScaleOverview);
 
       svg.select("#chart-x-axis")
         .transition()
@@ -302,6 +335,16 @@ function init() {
         .delay(delay)
         .call(yAxis);
 
+      overview.select("#chart-x-axis")
+        .transition()
+        .delay(delay)
+        .call(xAxisOverview);
+
+      overview.select("#chart-y-axis")
+        .transition()
+        .delay(delay)
+        .call(yAxisOverview);
+
       //Update the labels too
       xLabel.transition()
         .delay(delay)
@@ -309,6 +352,7 @@ function init() {
       yLabel.transition()
         .delay(delay)
         .text(yAxisText)
+
     }
 
     //For future use, a chart object which has some helpful items exposed
@@ -325,103 +369,4 @@ function init() {
   }
 }
 
-/*
-function next() {
-  var w=600,
-      h=100,
-      xpadding=ypadding=10;
-
-  var dataSelector = function(d) { return d.acceleration };
-
-  var overview = d3.select("#overview").append("svg")
-    .attr("width", w)
-    .attr("height", h);
-
-  xScale = d3.scaleLinear()
-    .domain([
-      d3.min(dataset, function (d) { return d.time }),
-      d3.max(dataset, function (d) { return d.time })
-    ])
-    .range([xpadding, w]);
-
-  yScale = d3.scaleLinear()
-    .domain([d3.min(dataset, function (d) { return dataSelector(d) * 1.15 }), d3.max(dataset, function (d) { return dataSelector(d) * 1.15 })])
-    .range([h - ypadding, 0]);
-  
-  var line = d3.line()
-    .x(function (d) { return xScale(d.time); })
-    .y(function (d) { return yScale(dataSelector(d)); });
-
-  overview.selectAll("path")
-    .data([dataset])
-    .enter()
-    .append("path");
-
-  overview.selectAll("path")
-    .attr("d", line)
-    .attr("stroke", "grey");
-
-  var registerMouseovers = function () {
-    overview.selectAll("rect")
-      .on("mouseover", function (d) {
-
-        d3.select(this)
-          .attr("fill", "rgb(237, 172, 0)");
-
-        overview.append("text")
-          .text(d)
-          .attr("id", "tooltip")
-          .attr("x", parseFloat(d3.select(this).attr("x")) + parseFloat(d3.select(this).attr("width")) / 2 - 10)
-          .attr("y", parseFloat(d3.select(this).attr("y")) + 20)
-      })
-      .on("mouseout", function () {
-        d3.select(this)
-          .attr("fill", "red")
-
-        d3.select("#tooltip")
-          .remove()
-      })
-  }
-  //registerMouseovers();
-
-  d3.select("#velocity")
-    .on("click", function () {
-      console.log("update")
-      dataSelector = function(d) { return d.velocity };
-
-      var paths = overview.selectAll("path").data([dataset]);
-
-      paths.attr("d", line)
-        .merge(paths)
-        .transition()
-        .delay(500)
-    });
-
-  d3.select("#remove")
-    .on("click", function () {
-      dataset.shift();
-      var bars = overview.selectAll("rect").data(dataset);
-      xScale.domain(d3.range(dataset.length));
-      bars.exit()
-        .transition()
-        .duration(500)
-        .attr("x", w)
-        .remove()
-
-      bars.transition()
-        .delay(500)
-        .attr("x", function (d, i) {
-          return xScale(i);
-        })
-        .attr("y", function (d) {
-          return h - yScale(d);
-        })
-        .attr("width", xScale.bandwidth())
-        .attr("height", function (d) {
-          return yScale(d);
-        })
-    });
-
-}
-*/
 window.onload = init;
