@@ -178,39 +178,41 @@ function init() {
 
     var yAxisOverview = d3.axisBottom()
       .scale(yScaleOverview);
+    var brushed = function () {
+      //scale is the selection we just made, otherwise it's the xScale overview's range
+      var s = d3.event.selection || xScaleOverview.range();
 
+      xScale.domain(s.map(xScaleOverview.invert, xScaleOverview));
+      svg.select(".line")
+        .attr("d", line);
+      svg.select(".chart-x-axis")
+        .call(xAxis);
+      svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
+        .scale(w / (s[1] - s[0]))
+        .translate(-s[0], 0));
+    };
     //A brush is something that can be manipulated by the mouse
     var brush = d3.brushX()
-      .extent([[0, 0], [w, overview_h]])
-      .on("brush end", function() {
-        //scale is the selection we just made, otherwise it's the xScale overview's range
-        var s = d3.event.selection || xScaleOverview.range();
-        
-        xScale.domain(s.map(xScaleOverview.invert, xScaleOverview));
-        svg.select(".line")
-          .attr("d", line);
-        svg.select(".chart-x-axis")
-          .call(xAxis);
-        svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
-          .scale(w / (s[1] - s[0]))
-          .translate(-s[0], 0));
-      });
+      .extent([[overview_xpadding, 0], [w, overview_h]])
+      .on("brush end", brushed);
 
     //A zoom helps us zoom content
+    var zoomed = function () {
+      var t = d3.event.transform;
+      xScale.domain(t.rescaleX(xScaleOverview).domain());
+      svg.select(".line").attr("d", line);
+      svg.select(".chart-x-axis").call(xAxis);
+      overview.select(".brush").call(brush.move, xScaleOverview.range().map(t.invertX, t));
+    }
     var zoom = d3.zoom()
       .scaleExtent([1, Infinity])
       .translateExtent([0, 0], [w, h])
       .extent([0, 0], [w, h])
-      .on("zoom", function() {
-        var t = d3.event.transform;
-        xScale.domain(t.rescaleX(xScaleOverview).domain());
-        svg.select(".line").attr("d", line);
-        svg.select(".chart-x-axis").call(xScaleOverview);
-        overview.select(".brush").call(brush.move, xScaleOverview.range().map(t.invertX, t));
-      });
+      .on("zoom", zoomed);
+
     svg.append("g")
       .attr("transform", "translate (0, " + (h - ypadding - yScale(0)) + ")")
-      .attr("class", "axis") 
+      .attr("class", "axis chart-x-axis") 
       .call(xAxis);
 
     overview.append("g")
