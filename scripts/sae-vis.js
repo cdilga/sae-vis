@@ -74,7 +74,7 @@ function init() {
       accelerationDifference: parseFloat(d["Motor_Velocity_Difference"]),
       velocity: parseFloat(d["Velocity"]),
       motorTemperature: (parseFloat(d["RMS1_D3_Motor_Temperature"]) + parseFloat(d["RMS2_D3_Motor_Temperature"]))/2,
-      efficency: Math.random() * 10,
+      //efficency: Math.random() * 10,
       time: parseInt(d["ID"])/60
     };
   }
@@ -96,24 +96,24 @@ function init() {
   var registerAllButtons = function() {
     //Defines how our charts will be setup
     d3.select("#acceleration").on("click", function (d) {
-      chart.update(dataset, function (d) { return d.acceleration }, "Acceleration", "Time");     
+      chart.update(dataset, function (d) { return d.acceleration }, "Acceleration (ms^-2)", "Time");     
     });
 
     d3.select("#diff").on("click", function (d) {
-      chart.update(dataset, function (d) { return d.accelerationDifference; }, "Differential", "Time");
+      chart.update(dataset, function (d) { return d.accelerationDifference; }, "Differential [v1- v2] (ms^-1)", "Time");
     });
 
     d3.select("#velocity").on("click", function (d) {
-      chart.update(dataset, function (d) { return d.velocity; }, "Velocity", "Time");
+      chart.update(dataset, function (d) { return d.velocity; }, "Velocity (ms^-1)", "Time");
     });
 
     d3.select("#temperature").on("click", function (d) {
       chart.update(dataset, function (d) { return d.motorTemperature; }, "Temperature *C", "Time");
     });
-
+    /*
     d3.select("#efficency").on("click", function (d) {
       chart.update(dataset, function (d) { return d.efficency; }, "Efficency", "Time");
-    });
+    });*/
   }
 
   //Create a function which perhaps takes an object and visualise it. It should transition between the previous and this set
