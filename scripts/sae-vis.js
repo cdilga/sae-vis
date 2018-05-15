@@ -274,73 +274,98 @@ function init() {
     var update = function (data, dataSelector, xAxisText, yAxisText) {
       var delay = 250;
       xScale = d3.scaleLinear()
-        .domain([
-          d3.min(data, function (d) { return d.time }),
-          d3.max(data, function (d) { return d.time })
-        ])
-        .range([xpadding, w]);
+      .domain([
+        d3.min(data, function (d) { return d.time }),
+        d3.max(data, function (d) { return d.time })
+      ])
+      .range([xpadding, w]);
       
       yScale = d3.scaleLinear()
-        .domain([d3.min(data, function (d) { return dataSelector(d) * 1.15 }), d3.max(data, function (d) { return dataSelector(d) * 1.15 })])
-        .range([h - ypadding, 0]);
-
+      .domain([d3.min(data, function (d) { return dataSelector(d) * 1.15 }), d3.max(data, function (d) { return dataSelector(d) * 1.15 })])
+      .range([h - ypadding, 0]);
+      
       xScaleOverview = d3.scaleLinear()
-        .domain([
-          d3.min(data, function (d) { return d.time }),
-          d3.max(data, function (d) { return d.time })
-        ])
+      .domain([
+        d3.min(data, function (d) { return d.time }),
+        d3.max(data, function (d) { return d.time })
+      ])
         .range([overview_xpadding, overview_w]);
-
-      yScaleOverview = d3.scaleLinear()
+        
+        yScaleOverview = d3.scaleLinear()
         .domain([d3.min(data, function (d) { return dataSelector(d) * 1.15 }), d3.max(data, function (d) { return dataSelector(d) * 1.15 })])
         .range([overview_h - overview_ypadding, 0]);
 
-      var line = d3.line()
+        var line = d3.line()
         .x(function (d) { return xScale(d.time); })
         .y(function (d) { return yScale(dataSelector(d)); });
-
+        
       var overviewLine = d3.line()
-        .x(function (d) { return xScaleOverview(d.time); })
-        .y(function (d) { return yScaleOverview(dataSelector(d)); });
+      .x(function (d) { return xScaleOverview(d.time); })
+      .y(function (d) { return yScaleOverview(dataSelector(d)); });
 
       var paths = svg.selectAll("path")
-        .data([data])
-        .transition()
-        .delay(250)
-        .attr("d", line);
-
+      .data([data])
+      .transition()
+      .delay(250)
+      .attr("d", line);
+      
       var overviewPaths = overview.selectAll("path")
-        .data([data])
-        .transition()
-        .delay(250)
-        .attr("d", overviewLine);
+      .data([data])
+      .transition()
+      .delay(250)
+      .attr("d", overviewLine);
       
       //Update the axes by creating new functions, and then transititioning to a new type of axis
       var xAxis = d3.axisBottom()
-        .ticks()
-        .scale(xScale);
-
+      .ticks()
+      .scale(xScale);
+      
       var yAxis = d3.axisLeft()
-        .scale(yScale);
-
+      .scale(yScale);
+      
       var xAxisOverview = d3.axisBottom()
-        .ticks()
-        .scale(xScaleOverview);
+      .ticks()
+      .scale(xScaleOverview);      
 
+      var anewzoomed = function () {
+        var t = d3.event.transform;
+        xScale.domain(t.rescaleX(xScaleOverview).domain());
+        svg.select(".line").attr("d", line);
+        svg.select(".chart-x-axis").call(xAxis);
+        overview.select(".brush").call(brush.move, xScaleOverview.range().map(t.invertX, t));
+      }
+
+      var anewbrushed = function () {
+        //scale is the selection we just made, otherwise it's the xScale overview's range
+        var s = d3.event.selection || xScaleOverview.range();
+
+        xScale.domain(s.map(xScaleOverview.invert, xScaleOverview));
+        svg.select(".line")
+          .attr("d", line);
+        svg.select(".chart-x-axis")
+          .call(xAxis);
+        svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
+          .scale(w / (s[1] - s[0]))
+          .translate(-s[0], 0));
+      };
+
+      zoom.on("zoom", anewzoomed);
+      brush.on("brush end", anewbrushed);
+      
       svg.select("#chart-x-axis")
-        .transition()
-        .delay(delay)
-        .call(xAxis);
+      .transition()
+      .delay(delay)
+      .call(xAxis);
       
       svg.select("#chart-y-axis")
-        .transition()
-        .delay(delay)
-        .call(yAxis);
-
+      .transition()
+      .delay(delay)
+      .call(yAxis);
+      
       overview.select("#chart-x-axis")
-        .transition()
-        .delay(delay)
-        .call(xAxisOverview);
+      .transition()
+      .delay(delay)
+      .call(xAxisOverview);
 
       overview.select("#chart-y-axis")
         .transition()
