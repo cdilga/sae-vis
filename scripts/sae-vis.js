@@ -1,5 +1,7 @@
 var dataset;
 
+!function (e, t) { "object" == typeof exports && "undefined" != typeof module ? t(exports) : "function" == typeof define && define.amd ? define(["exports"], t) : t(e.d3 = e.d3 || {}) }(this, function (e) { "use strict"; var t; t = function (e) { var t, i, o, r, n, d, h, f, u; return (t = e.height > 0 && e.width > 0) ? (i = e.x || 0, o = e.y || 0, r = "M " + i + "," + o, n = "l " + e.width + ",0", d = "l 0," + e.height, h = "l " + e.width * -1 + ",0", f = "z", u = [r, n, d, h, f].join(" ")) : void console.error("rectangle path generator requires both height and width properties") }; var i = t; e.rect = i, Object.defineProperty(e, "__esModule", { value: !0 }) });
+
 //It would be convenient to make a chart object, which has an svg,
 // axes exposed
 // something to update lines?
@@ -28,11 +30,12 @@ function init() {
     .attr("viewBox", "0 0 " + w + " " + h)
     .attr("width", w)
     .attr("height", h);
+
   //overview holding the brush selection
   var overview = d3.select("#overview")
     .append("svg")
     .attr("viewBox", "0 0 " + overview_w + " " + overview_h)
-    .attr("width", overview_w)
+    .attr("width", overview_w + overview_xpadding)
     .attr("height", overview_h);
 
   //Parse data from the CSV
@@ -68,7 +71,7 @@ function init() {
     "Motor_Velocity_Difference"
     */
 
-    //Please fix efficency
+    //TODO Please fix efficency
     return {
       acceleration: parseFloat(d["Acceleration"]),
       accelerationDifference: parseFloat(d["Motor_Velocity_Difference"]),
@@ -90,8 +93,6 @@ function init() {
     chart = LineChart(data, function (d) { return d.accelerationDifference; });
     registerAllButtons();
   });
-
-  //TODO see if there is an axis mid?
 
   var registerAllButtons = function() {
     //Defines how our charts will be setup
@@ -178,10 +179,31 @@ function init() {
 
     var yAxisOverview = d3.axisBottom()
       .scale(yScaleOverview);
+    //A brush is something that can be manipulated by the mouse
+    var brush = d3.brushX()
+      .extent([[overview_xpadding, 0], [w, overview_h]])
+
+    var brushEl = overview.append("g")
+      .attr("class", "brush")
+      .call(brush)
+
+    var handle = brushEl.selectAll(".handle--custom")
+      .data([{ type: "w" }, { type: "e" }])
+      .enter()
+      .append("path")
+      .attr("class", "handle--custom")
+      .attr("fill", "#666")
+      .attr("fill-opacity", 0.8)
+      .attr("stroke", "#000")
+      .attr("stroke-width", 1.5)
+      .attr("cursor", "ew-resize")
+      .attr("d", d3.rect({width: 10, height: overview_h, y:-overview_h/2, x:-5}));
+
     var brushed = function () {
       //scale is the selection we just made, otherwise it's the xScale overview's range
       var s = d3.event.selection || xScaleOverview.range();
 
+      //#TODO Get the x values of the selection to add indicator
       xScale.domain(s.map(xScaleOverview.invert, xScaleOverview));
       svg.select(".line")
         .attr("d", line);
@@ -190,11 +212,11 @@ function init() {
       svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
         .scale(w / (s[1] - s[0]))
         .translate(-s[0], 0));
+      handle.attr("display", null).attr("transform", function (d, i) { return "translate(" + s[i] + "," + overview_h / 2 + ")"; });
     };
-    //A brush is something that can be manipulated by the mouse
-    var brush = d3.brushX()
-      .extent([[overview_xpadding, 0], [w, overview_h]])
-      .on("brush end", brushed);
+    
+    //This must be done after the brushed function is defined
+    brush.on("brush end", brushed);
 
     //A zoom helps us zoom content
     var zoomed = function () {
@@ -209,6 +231,10 @@ function init() {
       .translateExtent([0, 0], [w, h])
       .extent([0, 0], [w, h])
       .on("zoom", zoomed);
+
+    brushEl.call(brush.move, [4, 8].map(xScaleOverview));
+
+
 
     svg.append("g")
       .attr("transform", "translate (0, " + (h - ypadding - yScale(0)) + ")")
@@ -255,11 +281,6 @@ function init() {
         (h - 4) + ")")
       .attr("class", "axis-label axis")
       .text("Time (minutes)");
-
-    overview.append("g")
-      .attr("class", "brush")
-      .call(brush)
-      .call(brush.move, xScale.range());
 
     var setXLabel = function(text) {
       xLabel.transition()
@@ -347,11 +368,13 @@ function init() {
         svg.select(".zoom").call(zoom.transform, d3.zoomIdentity
           .scale(w / (s[1] - s[0]))
           .translate(-s[0], 0));
+        handle.attr("display", null).attr("transform", function (d, i) { return "translate(" + s[i] + "," + overview_h / 2 + ")"; });
+
       };
 
       zoom.on("zoom", anewzoomed);
       brush.on("brush end", anewbrushed);
-      
+
       svg.select("#chart-x-axis")
       .transition()
       .delay(delay)
