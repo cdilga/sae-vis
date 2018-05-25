@@ -81,16 +81,14 @@ html, body{
   height:500px;
 }
 
-@media only screen and (max-width: 1200px) {
-  #chart svg, #overview svg {
-    width: 90%;
-  }
-  #overview {
-    padding: 0;
-  }
-  #chart {
-    padding: 1em 0 0 0;
-  }
+#chart svg, #overview svg {
+  width: 90%;
+}
+#overview {
+  padding: 0;
+}
+#chart {
+  padding: 1em 0 0 0;
 }
 
 @media only screen and (max-width: 768px) {
